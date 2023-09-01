@@ -4,16 +4,17 @@ import useMousePosition from '../hooks/useMousePosition';
 
 const CanvasComponent = (props) => {
   const parentRef = useRef(null);
-  const [parentDimensions, setParentDimensions] = useState({ width: 1, height: 100 });
+  const hasRunConvertToParticles = useRef(false);
+  const [parentDimensions, setParentDimensions] = useState({ width: 1200, height: 800 });
   const canvasDimensions = { width: parentDimensions.width, height: parentDimensions.height };
 
   const backgroundColor = 'black';
   const mouseColor = 'red';
 
-  const textFillColor = 'white';
-  const textStrokeColor = 'fuchsia';
-  const maxTextWidth = canvasDimensions.width * 0.5
+  const textGradientColor1 = "#00C9FF"
+  const textGradientColor2 = "#92FE9D"
 
+  const maxTextWidth = canvasDimensions.width * 0.5
 
   const fontSize = 150
   const lineHeight = 150
@@ -30,7 +31,7 @@ const CanvasComponent = (props) => {
       }
     };
 
-    handleResize();  // Initialize the parent width
+    // handleResize();  // Initialize the parent width
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -38,20 +39,27 @@ const CanvasComponent = (props) => {
     };
   }, []);
 
-  const canvasRef = useCanvas((ctx) => {
+  const draw = (ctx, fps) => {
     drawBackground(ctx)
     drawMouseCoords(ctx, mousePosition)
-    // drawText(ctx)
     drawWrappedText(ctx)
-  }, canvasDimensions);
-  
+    if (!hasRunConvertToParticles.current) {
+      console.log("here")
+      convertToParticles(ctx);
+      hasRunConvertToParticles.current = true;
+    }
+  };
 
+  const canvasRef = useCanvas(draw, canvasDimensions);
   const mousePosition = useMousePosition(canvasRef);
 
   const drawMouseCoords = (ctx, mousePosition) => {
     const { x, y } = mousePosition;
-    ctx.fillStyle = mouseColor;
-    ctx.fillRect(x - 5, y - 5, 10, 10);
+    ctx.fillStyle = "white";
+    ctx.textAlign = "left";
+    ctx.font = `${16}px ${fontFamily}`;
+    ctx.fillText(`X:${x}`, 0, 20);
+    ctx.fillText(`Y:${y}`, 0, 40);
   };
 
   const drawBackground = (ctx) => {
@@ -59,24 +67,16 @@ const CanvasComponent = (props) => {
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
-  // const drawText = (ctx) => {
-  //   const textPostition = {x: ctx.canvas.width / 2, y: ctx.canvas.height / 2}
-  //   ctx.textAlign = "center";
-  //   ctx.textBaseline = "middle";
-  //   ctx.fillStyle = textFillColor;
-  //   ctx.strokeStyle = textStrokeColor;
-  //   ctx.font = `${fontSize}px ${fontFamily}`;
-  //   ctx.fillText(props.text, textPostition.x, textPostition.y);
-  //   ctx.strokeText(props.text, textPostition.x, textPostition.y);
-  // };
-
   const drawWrappedText = (ctx) => {
-    const textPostition = {x: ctx.canvas.width / 2, y: ctx.canvas.height / 2}
+    const textPostition = {x: canvasDimensions.width/2, y: canvasDimensions.height/2}
+    
+    const textFillGradient = ctx.createLinearGradient(0, 0, canvasDimensions.width/2, canvasDimensions.height/2)
+    textFillGradient.addColorStop(0, textGradientColor1)
+    textFillGradient.addColorStop(1, textGradientColor2)
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = textFillColor;
-    ctx.strokeStyle = textStrokeColor;
+    ctx.fillStyle = textFillGradient;
     ctx.font = `${fontSize}px ${fontFamily}`;
 
     let linesArray = [];
@@ -85,7 +85,7 @@ const CanvasComponent = (props) => {
     let words = props.text.split(' ');
 
     for (let i = 0; i < words.length; i++){
-      let testLine = line + words[i] + '';
+      let testLine = line + words[i] + ' ';
 
       if (ctx.measureText(testLine).width > maxTextWidth) {
         line = words[i] + ' '
@@ -104,11 +104,37 @@ const CanvasComponent = (props) => {
     })
   }
 
+  const convertToParticles = (ctx) => {
+    let particles = []
+    let gap = 3
+    const pixels = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
+    console.log(pixels.data[2])
+    console.log(ctx.canvas.height);
+    for (let y = 0; y < ctx.canvas.height; y += gap){
+      for (let x = 0; x < ctx.canvas.width; x += gap){
+        const index = (y * ctx.canvas.width + x) * 4;
+        const alpha = pixels.data[index + gap]
+        if (alpha > 0){
+          const red = pixels.data[index];
+          const green = pixels.data[index + 1];
+          const blue = pixels.data[index + 2];
+          const color = `rbg(${red}, ${green}, ${blue})`
+          console.log(color)
+        }
+      }
+    }
+  }
+
   return (
     <div ref={parentRef} className='w-full absolute top-0 bottom-0'>
-      <canvas ref={canvasRef} width={canvasDimensions.width} height={canvasDimensions.height} />
+      <canvas 
+        ref={canvasRef}
+        width={canvasDimensions.width} height={canvasDimensions.height}
+        />
     </div>
   );
 };
 
 export default CanvasComponent;
+
+
