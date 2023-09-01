@@ -1,16 +1,22 @@
-import React, { type ReactElement } from "react";
-import { Button } from "@jamesprenticez/tailwind-uplift"
+import React, { useState } from "react";
 import Body from "../components/layout/Body";
+import CanvasComponent from "../components/Canvas";
 
-const Home = (): ReactElement => {
+const Home = () => {
+  const [value, setValue] = useState("")
+
   return (
     <Body>
-      <h1>Home</h1>
+      <div className="w-full h-full min-h-screen relative bg-green-700">
+        <input 
+          type="text"
+          className="absolute m-[10px] p-[10px] w-[calc(100%-20px)] z-50"
+          onChange={(e) => setValue(e.target.value)}
+        />
 
-      <Button type="button" className="bg-red-500 h-12">
-        Button
-      </Button>
-
+        <CanvasComponent />
+        
+      </div>
     </Body>
   );
 };
