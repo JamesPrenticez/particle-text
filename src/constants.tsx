@@ -1,5 +1,5 @@
 export const project = {
-  name: "BOILER PLATE",
+  name: "PARTICLE TEXT",
 };
 
 export const pages = [
