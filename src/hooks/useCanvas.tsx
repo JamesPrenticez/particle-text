@@ -33,6 +33,7 @@ export default function useCanvas(draw, {width, height}) {
     let animationFrameId;
 
     const render = (timestamp) => {
+      // console.log("animating")
       frameCount.current++;
     
       const now = Date.now();
@@ -45,7 +46,10 @@ export default function useCanvas(draw, {width, height}) {
       }
       context.clearRect(0, 0, width, height);
       draw(context, fps.current);
+
+      animationFrameId = requestAnimationFrame(render);
     };
+
     animationFrameId = requestAnimationFrame(render);
     
     return () => {

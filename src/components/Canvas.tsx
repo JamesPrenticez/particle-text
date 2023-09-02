@@ -144,7 +144,6 @@ const CanvasComponent = (props) => {
           const green = pixels.data[index + 1];
           const blue = pixels.data[index + 2];
           const color = `rgb(${red}, ${green}, ${blue})`
-          // console.log(color)
 
           const particle = createParticle(x, y, color, gap);
           particles.push(particle);
@@ -157,7 +156,7 @@ const CanvasComponent = (props) => {
   const createParticle = (orginX, orginY, color, gap) => {
     const ctx = canvasRef.current.getContext('2d');
 
-    let x = Math.random() * ctx.canvas.width - 1; 
+    let x = Math.random() * ctx.canvas.width; 
     let y = 0
     let size = gap
     let dx = 0
@@ -166,7 +165,7 @@ const CanvasComponent = (props) => {
     let angle = 0
     let distance = 0
     let friction = Math.random() * 0.6 + 0.15
-    let ease = Math.random() * 0.1 + 0.005
+    let ease = Math.random() * 0.1 + 0.005;
   
 
     return {
@@ -176,11 +175,12 @@ const CanvasComponent = (props) => {
       draw: (ctx) => {
         // if(color !== color){}
         ctx.fillStyle = color
-        ctx.fillRect(orginX, orginY, size, size)
+        ctx.fillRect(x, y, size, size)
 
       },
       update: () => {
-
+        x += (orginX - x) * ease
+        y += (orginY - y) * ease
       },
     };
   };
