@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Body from "../components/layout/Body";
-import CanvasComponent from "../components/Canvas";
+import CanvasComponent from "../components/ParticleText";
 import Test from "../components/AnimatedCanvas";
 
 const Home = () => {
