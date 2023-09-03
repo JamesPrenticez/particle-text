@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useCanvas from '../hooks/useCanvas';
 import useMousePosition from '../hooks/useMousePosition';
+import useScreenSize from '../hooks/useScreenSize';
 
 const CanvasComponent = (props) => {
   const parentRef = useRef(null);
@@ -20,8 +21,38 @@ const CanvasComponent = (props) => {
 
   const maxTextWidth = canvasDimensions.width * 0.5
 
-  const fontSize = 150
-  const lineHeight = 150
+  const screenSize = useScreenSize(parentRef); // Use the custom hook
+
+  let fontSize;
+  let lineHeight;
+  let mouseRadius 
+
+  switch(screenSize) {
+    case 'sm':
+      fontSize = 75;
+      lineHeight = 75;
+      mouseRadius = 5000
+      break;
+    case 'md':
+      fontSize = 100;
+      lineHeight = 100;
+      mouseRadius = 10000
+      break;
+    case 'lg':
+      fontSize = 150;
+      lineHeight = 150;
+      mouseRadius = 30000
+      break;
+    case 'xl':
+      fontSize = 200;
+      lineHeight = 200;
+      mouseRadius = 30000
+      break;
+    default:
+      fontSize = 150;
+      lineHeight = 150;
+      mouseRadius = 30000
+  }
 
   const fontFamily = 'Helvetica'
 
@@ -53,14 +84,7 @@ const CanvasComponent = (props) => {
     }
   }, [canvasDimensions]); 
 
-  // useEffect(() => {
-  //   if (canvasRef.current) {
-  //     const ctx = canvasRef.current.getContext('2d', { willReadFrequently: false });
-  //     particlesRef.current = convertToParticles(ctx);
-  //   }
-  // }, [canvasDimensions]); 
-
-  const draw = (ctx, fps) => {
+  const draw = (ctx) => {
     drawBackground(ctx)
     drawMouseCoords(ctx, mousePosition)
     // drawWrappedText(ctx)
@@ -97,7 +121,7 @@ const CanvasComponent = (props) => {
     textFillGradient.addColorStop(1, textGradientColor2)
 
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "bottom";
     ctx.fillStyle = textFillGradient;
     ctx.font = `${fontSize}px ${fontFamily}`;
 
@@ -128,12 +152,10 @@ const CanvasComponent = (props) => {
 
   const convertToParticles = (ctx) => {
     let particles = []
-    let gap = 3
+    let gap = 2
     const pixels = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
-    // we only want he text for analysis then we draw pixels in its place
+    // We only want he text for analysis then we draw pixels in its place
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height) 
-    // console.log(pixels.data[2])
-    // console.log(ctx.canvas.height);
     for (let y = 0; y < ctx.canvas.height; y += gap){
       for (let x = 0; x < ctx.canvas.width; x += gap){
         const index = (y * ctx.canvas.width + x) * 4;
@@ -165,34 +187,27 @@ const CanvasComponent = (props) => {
     let force = 0 
     let angle = 0
     let distance = 0
-    let friction = Math.random() * 0.6 + 0.15;
-    let ease = Math.random() * 0.1 + 0.005;
+    let friction = Math.random() * 0 + 0.15;
+    let ease = Math.random() * 0.1 + 0.030;
+    // let friction = Math.random() * 0 + 0.15;
+    // let ease = Math.random() * 0.1 + 0.005;
 
-    // const { mouseX, mouseY } = mousePosition;
-    let mouseRadius = 1000
-  
     return {
       orginX,
       orginY,
       color,
       draw: (ctx) => {
-        // if(color !== color){}
+        // improve performance here by only setting color if its changed
+        // if(color !== color){} 
         ctx.fillStyle = color;
         ctx.fillRect(x, y, size, size);
 
       },
-      update: (m) => {
-
-        if (m) {
-          dx = m.x - x;
-          dy = m.y - y;
-          // ... rest of your code
-        }
-        // dx = mousePosition.x - x;
-        // dy = mousePosition.y - y;
+      update: (mouse) => {
+        dx = mouse.x - x;
+        dy = mouse.y - y;
         distance = (dx * dx) + (dy * dy);
         force = -mouseRadius / distance;
-        // console.log(distance)
 
         if(distance < mouseRadius){
           angle = Math.atan2(dy, dx);
@@ -203,19 +218,19 @@ const CanvasComponent = (props) => {
         x += (vx *= friction) + (orginX - x) * ease;
         y += (vy *= friction) + (orginY - y) * ease;
 
+        // origional without mouse interaction
         // x += (orginX - x) * ease;
         // y += (orginY - y) * ease;
       },
     };
   };
   
-
   return (
     <div ref={parentRef} className='w-full absolute top-0 bottom-0'>
       <canvas 
         ref={canvasRef}
         width={canvasDimensions.width} height={canvasDimensions.height}
-        />
+      />
     </div>
   );
 };

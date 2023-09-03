@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Loading from "./components/common/Loading";
 import Home from "./pages/Home";
+import CanvasComponent from "./components/Canvas";
 
 const About = lazy(async () => {
   const [moduleExports] = await Promise.all([
@@ -22,14 +23,15 @@ const App = (): React.ReactElement => {
         <Loading fullScreen={true} backgroundColor="rgb(249 250 251)" />
       }
     >
-      <Layout>
+      {/* <Layout> */}
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/" element={<CanvasComponent text={'James Prentice'}/>} />
+          {/* <Route path="/" element={<Home />} /> */}
+          {/* <Route path="/home" element={<Home />} /> */}
+          {/* <Route path="/about" element={<About />} /> */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Layout>
+      {/* </Layout> */}
     </Suspense>
   );
 };
