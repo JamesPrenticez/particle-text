@@ -65,9 +65,9 @@ const CanvasComponent = (props) => {
     drawMouseCoords(ctx, mousePosition)
     // drawWrappedText(ctx)
     
-    if (particlesRef.current) {
+    if (particlesRef.current && mousePosition) {
       particlesRef.current.forEach((particle) => {
-        particle.update();
+        particle.update(mousePosition);
         particle.draw(ctx);
       });
     }
@@ -77,12 +77,11 @@ const CanvasComponent = (props) => {
   const mousePosition = useMousePosition(canvasRef);
 
   const drawMouseCoords = (ctx, mousePosition) => {
-    const { x, y } = mousePosition;
     ctx.fillStyle = "white";
     ctx.textAlign = "left";
     ctx.font = `${16}px ${fontFamily}`;
-    ctx.fillText(`X:${x}`, 0, 20);
-    ctx.fillText(`Y:${y}`, 0, 40);
+    ctx.fillText(`X:${mousePosition.x}`, 0, 20);
+    ctx.fillText(`Y:${mousePosition.y}`, 0, 40);
   };
 
   const drawBackground = (ctx) => {
@@ -161,26 +160,51 @@ const CanvasComponent = (props) => {
     let size = gap
     let dx = 0
     let dy = 0
+    let vx = 0
+    let vy = 0
     let force = 0 
     let angle = 0
     let distance = 0
-    let friction = Math.random() * 0.6 + 0.15
+    let friction = Math.random() * 0.6 + 0.15;
     let ease = Math.random() * 0.1 + 0.005;
-  
 
+    // const { mouseX, mouseY } = mousePosition;
+    let mouseRadius = 1000
+  
     return {
       orginX,
       orginY,
       color,
       draw: (ctx) => {
         // if(color !== color){}
-        ctx.fillStyle = color
-        ctx.fillRect(x, y, size, size)
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, size, size);
 
       },
-      update: () => {
-        x += (orginX - x) * ease
-        y += (orginY - y) * ease
+      update: (m) => {
+
+        if (m) {
+          dx = m.x - x;
+          dy = m.y - y;
+          // ... rest of your code
+        }
+        // dx = mousePosition.x - x;
+        // dy = mousePosition.y - y;
+        distance = (dx * dx) + (dy * dy);
+        force = -mouseRadius / distance;
+        // console.log(distance)
+
+        if(distance < mouseRadius){
+          angle = Math.atan2(dy, dx);
+          vx += force * Math.cos(angle);
+          vy += force * Math.sin(angle);
+        }
+
+        x += (vx *= friction) + (orginX - x) * ease;
+        y += (vy *= friction) + (orginY - y) * ease;
+
+        // x += (orginX - x) * ease;
+        // y += (orginY - y) * ease;
       },
     };
   };
